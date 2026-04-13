@@ -19,6 +19,7 @@ app.use(cookieParser());
 
 const coworkingSpaces = require('./routes/coworkingSpaces');
 const reservations = require('./routes/reservations');
+const rooms = require('./routes/rooms');
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -27,6 +28,7 @@ const recommend = require('./routes/recommend');
 
 app.use('/api/v1/coworkingSpaces', coworkingSpaces);
 app.use('/api/v1/reservations', reservations);
+app.use('/api/v1/rooms', rooms);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/recommend', recommend);
 

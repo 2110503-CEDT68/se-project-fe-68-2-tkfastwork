@@ -19,6 +19,10 @@ const ReservationSchema = new mongoose.Schema({
         ref: 'CoworkingSpace',
         required: true
     },
+    room: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Room'
+    },
     qrCode: {
         type: String
     },
@@ -30,5 +34,6 @@ const ReservationSchema = new mongoose.Schema({
 
 ReservationSchema.index({ user: 1 });
 ReservationSchema.index({ coworkingSpace: 1 });
+ReservationSchema.index({ room: 1 });
 
 module.exports = mongoose.model('Reservation', ReservationSchema);
