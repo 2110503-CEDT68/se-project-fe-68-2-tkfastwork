@@ -9,10 +9,21 @@ interface SpacesBrowserProps {
   spaces: CoworkingSpace[];
 }
 
+function isCurrentlyOpen(space: CoworkingSpace): boolean {
+  if (!space.opentime || !space.closetime) return true; // fail-open
+
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const currentTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+  return currentTime >= space.opentime && currentTime < space.closetime;
+}
+
 export default function SpacesBrowser({ spaces }: SpacesBrowserProps) {
   const [query, setQuery] = useState("");
+  const [hideClosedSpaces, setHideClosedSpaces] = useState(false);
 
-  const filtered =
+  const afterSearch =
     query.trim() === ""
       ? spaces
       : spaces.filter(
@@ -20,6 +31,10 @@ export default function SpacesBrowser({ spaces }: SpacesBrowserProps) {
             s.name.toLowerCase().includes(query.toLowerCase()) ||
             (s.address || "").toLowerCase().includes(query.toLowerCase())
         );
+
+  const filtered = hideClosedSpaces
+    ? afterSearch.filter(isCurrentlyOpen)
+    : afterSearch;
 
   return (
     <>
@@ -32,6 +47,19 @@ export default function SpacesBrowser({ spaces }: SpacesBrowserProps) {
             Browse and book co-working spaces near you
           </p>
           <SearchBar value={query} onChange={setQuery} />
+
+          {/* US1-7: Toggle to hide currently-closed spaces */}
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <label className="flex items-center gap-2 cursor-pointer select-none text-white/90 text-sm font-medium">
+              <input
+                type="checkbox"
+                checked={hideClosedSpaces}
+                onChange={(e) => setHideClosedSpaces(e.target.checked)}
+                className="w-4 h-4 rounded accent-white cursor-pointer"
+              />
+              Show open spaces only
+            </label>
+          </div>
         </div>
       </section>
 
@@ -41,7 +69,11 @@ export default function SpacesBrowser({ spaces }: SpacesBrowserProps) {
             <div className="font-semibold text-gray-900 mb-1.5">
               No spaces found
             </div>
-            <div className="text-sm">Try a different search term.</div>
+            <div className="text-sm">
+              {hideClosedSpaces
+                ? 'No spaces are currently open. Try unchecking "Show open spaces only".'
+                : "Try a different search term."}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
