@@ -3,7 +3,7 @@ export interface User {
   name: string;
   email: string;
   tel: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "owner";
   createdAt: string;
 }
 
@@ -15,6 +15,8 @@ export interface CoworkingSpace {
   opentime: string;
   closetime: string;
   id: string;
+  owner?: string;
+  isVisible?: boolean;
 }
 
 export interface Reservation {
