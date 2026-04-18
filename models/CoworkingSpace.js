@@ -20,9 +20,13 @@ const CoworkingSpaceSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add open time (e.g., 08:00)']
     },
-    closetime: { 
+    closetime: {
         type: String,
         required: [true, 'Please add close time (e.g., 18:00)']
+    },
+    owner: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User'
     }
 }, {
     toJSON: { virtuals: true },

@@ -10,10 +10,12 @@
 
 1. [Authentication](#1-authentication)
 2. [Coworking Spaces](#2-coworking-spaces)
-3. [Reservations](#3-reservations)
-4. [AI Recommendation](#4-ai-recommendation)
-5. [Data Models](#5-data-models)
-6. [Error Reference](#6-error-reference)
+3. [Coworking Space Requests](#3-coworking-space-requests)
+4. [Rooms](#4-rooms)
+5. [Reservations](#5-reservations)
+6. [AI Recommendation](#6-ai-recommendation)
+7. [Data Models](#7-data-models)
+8. [Error Reference](#8-error-reference)
 
 ---
 
@@ -33,7 +35,7 @@ Register a new user account. Returns a JWT token on success.
 | `tel`      | string | Yes      | 10-digit phone number              |
 | `email`    | string | Yes      | Unique email address               |
 | `password` | string | Yes      | Min 6 characters                   |
-| `role`     | string | No       | `"user"` (default) or `"admin"`    |
+| `role`     | string | No       | `"user"` (default), `"admin"`, or `"owner"` |
 
 **Example Request**
 ```json
@@ -349,7 +351,291 @@ Authorization: Bearer <admin_token>
 
 ---
 
-## 3. Reservations
+## 3. Coworking Space Requests
+
+Applications submitted by users who want to add their co-working space to the platform (US1-1). A pending request is **not** a coworking space — once an admin reviews and approves it, the actual `CoworkingSpace` document is created from the request data (US1-2, separate ticket).
+
+### POST `/coworkingSpaceRequests`
+
+Submit a new request to add a co-working space.
+
+**Access:** Private (any authenticated user)
+
+**Request Body**
+
+| Field              | Type            | Required | Constraints |
+|--------------------|-----------------|----------|-------------|
+| `name`             | string          | Yes      | Non-empty, must contain ≥1 alphabet, max 50 chars |
+| `address`          | string          | Yes      | Non-empty, must contain ≥1 alphabet |
+| `tel`              | string          | Yes      | Exactly 10 digits |
+| `opentime`         | string          | Yes      | `HH:MM` format (00:00–23:59) |
+| `closetime`        | string          | Yes      | `HH:MM` format (00:00–23:59) |
+| `description`      | string          | Yes      | Non-empty, ≥1 alphabet, **10–1000 words** (whitespace-split count) |
+| `proofOfOwnership` | string          | Yes      | `http(s)://…` URL |
+| `pics`             | array of string | No       | Each item must be an `http(s)` URL |
+
+**Side Effects**
+- A confirmation email is sent to the submitter's email. Email failure is non-fatal.
+
+**Example Request**
+```json
+POST /api/v1/coworkingSpaceRequests
+Authorization: Bearer <token>
+
+{
+  "name": "Cozy Cowork Bangkok",
+  "address": "123 Sukhumvit Rd, Bangkok",
+  "tel": "0900000000",
+  "opentime": "08:00",
+  "closetime": "20:00",
+  "description": "A quiet modern coworking space with private rooms fast wifi and complimentary coffee for focused professionals.",
+  "pics": ["https://example.com/pic1.jpg", "https://example.com/pic2.jpg"],
+  "proofOfOwnership": "https://example.com/deed.pdf"
+}
+```
+
+**Example Response** `201 Created`
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "664d0000000000000000020",
+    "submitter": "664a1b2c3d4e5f6a7b8c9d0e",
+    "name": "Cozy Cowork Bangkok",
+    "address": "123 Sukhumvit Rd, Bangkok",
+    "tel": "0900000000",
+    "opentime": "08:00",
+    "closetime": "20:00",
+    "description": "A quiet modern coworking space...",
+    "pics": ["https://example.com/pic1.jpg", "https://example.com/pic2.jpg"],
+    "proofOfOwnership": "https://example.com/deed.pdf",
+    "status": "pending",
+    "createdAt": "2026-04-18T10:00:00.000Z"
+  }
+}
+```
+
+**Validation Error Shape**
+
+On validation failure the response body contains an `errors` array listing every issue found (so the client can disable the submit button until all pass):
+
+```json
+{
+  "success": false,
+  "errors": [
+    "name must contain at least one alphabet",
+    "description must be at least 10 words (got 5)",
+    "proofOfOwnership is required"
+  ]
+}
+```
+
+**Errors**
+
+| Status | Cause |
+|--------|-------|
+| 400    | Validation failed (see `errors` array) |
+| 401    | Not authenticated |
+| 500    | Server error |
+
+---
+
+### GET `/coworkingSpaceRequests/mine`
+
+List all requests submitted by the logged-in user, newest first. This is how submitters check the status (`pending` / `approved` / `rejected`) of their applications.
+
+**Access:** Private (any authenticated user)
+
+**Example Request**
+```
+GET /api/v1/coworkingSpaceRequests/mine
+Authorization: Bearer <token>
+```
+
+**Example Response** `200 OK`
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "_id": "664d0000000000000000020",
+      "submitter": "664a1b2c3d4e5f6a7b8c9d0e",
+      "name": "Cozy Cowork Bangkok",
+      "status": "pending",
+      "createdAt": "2026-04-18T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### GET `/coworkingSpaceRequests/mine/:id`
+
+Get a single request by ID. The authenticated user must be the original submitter, or an admin.
+
+**Access:** Private
+
+**URL Params:** `id` — Request ObjectId
+
+**Example Response** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "664d0000000000000000020",
+    "submitter": "664a1b2c3d4e5f6a7b8c9d0e",
+    "name": "Cozy Cowork Bangkok",
+    "status": "pending",
+    "createdAt": "2026-04-18T10:00:00.000Z"
+  }
+}
+```
+
+**Errors**
+
+| Status | Cause |
+|--------|-------|
+| 401    | Not authenticated |
+| 403    | Not the submitter and not an admin |
+| 404    | Request not found |
+
+---
+
+## 4. Rooms
+
+Rooms live inside a coworking space. Use the nested `/coworkingSpaces/:coworkingSpaceId/rooms` base path for listing and creation, and the top-level `/rooms/:id` path for deletion.
+
+### GET `/rooms` or `/coworkingSpaces/:coworkingSpaceId/rooms`
+
+List rooms. When called under a coworking space, results are scoped to that space.
+
+**Access:** Public
+
+**Example Request**
+```
+GET /api/v1/coworkingSpaces/664b0000000000000000001/rooms
+```
+
+**Example Response** `200 OK`
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "_id": "664e0000000000000000030",
+      "name": "Meeting Room A",
+      "description": "Window seat",
+      "capacity": 6,
+      "coworkingSpace": "664b0000000000000000001",
+      "createdAt": "2026-04-18T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### POST `/coworkingSpaces/:coworkingSpaceId/rooms`
+
+Create a new room inside the given coworking space.
+
+**Access:** Private — `owner` of the space, or `admin`
+
+**URL Params:** `coworkingSpaceId` — ObjectId of the target space
+
+**Request Body**
+
+| Field         | Type   | Required | Constraints |
+|---------------|--------|----------|-------------|
+| `name`        | string | Yes      | Max 100 chars |
+| `capacity`    | number | Yes      | ≥ 1 |
+| `description` | string | No       | Max 500 chars |
+
+**Example Request**
+```json
+POST /api/v1/coworkingSpaces/664b0000000000000000001/rooms
+Authorization: Bearer <owner_or_admin_token>
+
+{
+  "name": "Meeting Room A",
+  "capacity": 6,
+  "description": "Window seat"
+}
+```
+
+**Example Response** `201 Created`
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "664e0000000000000000030",
+    "name": "Meeting Room A",
+    "description": "Window seat",
+    "capacity": 6,
+    "coworkingSpace": "664b0000000000000000001",
+    "createdAt": "2026-04-18T10:00:00.000Z"
+  }
+}
+```
+
+**Errors**
+
+| Status | Cause |
+|--------|-------|
+| 400    | Validation error or missing `coworkingSpaceId` |
+| 401    | Not authenticated |
+| 403    | Not the space's owner (and not admin) |
+| 404    | Coworking space not found |
+
+---
+
+### DELETE `/rooms/:id`
+
+Delete a room. Cascades: all reservations linked to this room are cancelled and every affected user is emailed (US1-6).
+
+**Access:** Private — `owner` of the space that contains the room, or `admin`
+
+**URL Params:** `id` — Room ObjectId
+
+**Side Effects**
+- All `Reservation` documents where `room === :id` are deleted.
+- Each affected user whose reservation has an email receives a cancellation email. Per-recipient email failures are non-fatal — one bad email does not roll back the delete.
+
+**Example Request**
+```
+DELETE /api/v1/rooms/664e0000000000000000030
+Authorization: Bearer <owner_or_admin_token>
+```
+
+**Example Response** `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "roomId": "664e0000000000000000030",
+    "cancelledReservations": 2,
+    "notifiedUsers": 2
+  }
+}
+```
+
+**Errors**
+
+| Status | Cause |
+|--------|-------|
+| 401    | Not authenticated |
+| 403    | Not the space's owner (and not admin) |
+| 404    | Room not found |
+| 500    | Server error |
+
+> **Warning:** This is a cascading delete. All reservations for this room are permanently removed.
+
+---
+
+## 5. Reservations
 
 Reservations can be accessed via two base paths:
 
@@ -672,7 +958,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 4. AI Recommendation
+## 6. AI Recommendation
 
 ### POST `/recommend`
 
@@ -714,7 +1000,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 5. Data Models
+## 7. Data Models
 
 ### User
 
@@ -724,7 +1010,7 @@ Authorization: Bearer <token>
 | `name`      | string | Required |
 | `tel`       | string | Required, 10 digits |
 | `email`     | string | Required, unique |
-| `role`      | string | `"user"` (default) or `"admin"` |
+| `role`      | string | `"user"` (default), `"admin"`, or `"owner"` |
 | `password`  | string | bcrypt-hashed, never returned in responses |
 | `createdAt` | Date   | Auto-set |
 
@@ -738,23 +1024,57 @@ Authorization: Bearer <token>
 | `tel`       | string | Required |
 | `opentime`  | string | Required, format `HH:MM` |
 | `closetime` | string | Required, format `HH:MM` |
+| `owner`     | ObjectId | Ref: User. Set when an admin approves a `CoworkingSpaceRequest` (US1-2) or assigned directly by admin. |
 | `reservations` | virtual | Populated on GET all |
+
+### Room
+
+| Field            | Type     | Notes |
+|------------------|----------|-------|
+| `_id`            | ObjectId | Auto-generated |
+| `name`           | string   | Required, max 100 chars |
+| `description`    | string   | Optional, max 500 chars |
+| `capacity`       | number   | Required, min 1 |
+| `coworkingSpace` | ObjectId | Ref: CoworkingSpace, required |
+| `reservations`   | virtual  | Populated via reverse lookup on `Reservation.room` |
+| `createdAt`      | Date     | Auto-set |
 
 ### Reservation
 
-| Field          | Type     | Notes |
-|----------------|----------|-------|
-| `_id`          | ObjectId | Auto-generated |
-| `apptDate`     | Date     | Required — start of booking |
-| `apptEnd`      | Date     | Required — end of booking |
-| `user`         | ObjectId | Ref: User |
+| Field            | Type     | Notes |
+|------------------|----------|-------|
+| `_id`            | ObjectId | Auto-generated |
+| `apptDate`       | Date     | Required — start of booking |
+| `apptEnd`        | Date     | Required — end of booking |
+| `user`           | ObjectId | Ref: User |
 | `coworkingSpace` | ObjectId | Ref: CoworkingSpace |
-| `qrCode`       | string   | Base64 data URI, generated on creation |
-| `createdAt`    | Date     | Auto-set |
+| `room`           | ObjectId | Ref: Room. Optional — links a reservation to a specific room so it can be cancelled when the room is deleted (US1-6). |
+| `qrCode`         | string   | Base64 data URI, generated on creation |
+| `createdAt`      | Date     | Auto-set |
+
+### CoworkingSpaceRequest
+
+| Field              | Type     | Notes |
+|--------------------|----------|-------|
+| `_id`              | ObjectId | Auto-generated |
+| `submitter`        | ObjectId | Ref: User, required |
+| `name`             | string   | Required, max 50 chars |
+| `address`          | string   | Required |
+| `tel`              | string   | Required, 10 digits |
+| `opentime`         | string   | Required, `HH:MM` |
+| `closetime`        | string   | Required, `HH:MM` |
+| `description`      | string   | Required, 10–1000 words |
+| `pics`             | [string] | Array of `http(s)` URLs |
+| `proofOfOwnership` | string   | Required, `http(s)` URL |
+| `status`           | string   | `"pending"` (default), `"approved"`, or `"rejected"` |
+| `rejectionReason`  | string   | Populated by admin on rejection (US1-2) |
+| `reviewedBy`       | ObjectId | Ref: User (the admin who reviewed). US1-2. |
+| `reviewedAt`       | Date     | Timestamp when admin reviewed. US1-2. |
+| `createdAt`        | Date     | Auto-set |
 
 ---
 
-## 6. Error Reference
+## 8. Error Reference
 
 All error responses follow this shape:
 
@@ -791,6 +1111,13 @@ All error responses follow this shape:
 | POST | `/coworkingSpaces` | Admin | Create space |
 | PUT | `/coworkingSpaces/:id` | Admin | Update space |
 | DELETE | `/coworkingSpaces/:id` | Admin | Delete space + reservations |
+| POST | `/coworkingSpaceRequests` | User | Submit new-space request |
+| GET | `/coworkingSpaceRequests/mine` | User | List my requests |
+| GET | `/coworkingSpaceRequests/mine/:id` | User | Get one of my requests |
+| GET | `/rooms` | Public | List all rooms |
+| GET | `/coworkingSpaces/:spaceId/rooms` | Public | List rooms in a space |
+| POST | `/coworkingSpaces/:spaceId/rooms` | Owner/Admin | Create room |
+| DELETE | `/rooms/:id` | Owner/Admin | Delete room + cancel reservations |
 | GET | `/reservations/public/:id` | Public | Get reservation (QR scan) |
 | GET | `/reservations` | User/Admin | List reservations |
 | GET | `/reservations/:id` | User/Admin | Get one reservation |
