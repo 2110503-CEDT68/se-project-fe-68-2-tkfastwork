@@ -23,6 +23,8 @@ export default function EditSpaceModal({ space, isOpen, onClose, onUpdated }: Ed
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (space) {
@@ -85,6 +87,30 @@ export default function EditSpaceModal({ space, isOpen, onClose, onUpdated }: Ed
       setError(err instanceof Error ? err.message : "Update failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!session?.user?.token || !space) return;
+
+    setIsDeleting(true);
+    setError("");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coworkingSpaces/${space._id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${session.user.token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to delete space");
+
+      setShowDeleteConfirm(false);
+      onUpdated();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Delete failed");
+      setIsDeleting(false);
     }
   };
 
@@ -211,8 +237,46 @@ export default function EditSpaceModal({ space, isOpen, onClose, onUpdated }: Ed
               >
                 {loading ? "Updating..." : "Update"}
               </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={loading}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Delete
+              </button>
             </div>
           </form>
+
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Delete Space?</h3>
+                <p className="text-gray-600 mb-2">
+                  Are you sure you want to delete <strong>{space.name}</strong>?
+                </p>
+                <p className="text-sm text-gray-500 mb-6">
+                  This action cannot be undone. All reservations and rooms associated with this space will also be deleted.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isDeleting}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDeleting ? "Deleting..." : "Delete Space"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
