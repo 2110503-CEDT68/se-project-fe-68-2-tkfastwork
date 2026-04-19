@@ -215,6 +215,11 @@ export default function Navbar() {
                         Admin
                       </span>
                     )}
+                    {isOwner && (
+                      <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        Owner
+                      </span>
+                    )}
                   </span>
                   <button onClick={handleSignOut} className={ghostBtn}>
                     Sign Out
