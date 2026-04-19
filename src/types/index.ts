@@ -49,6 +49,15 @@ export interface Reservation {
   createdAt: string;
 }
 
+export interface Room {
+  _id: string;
+  name: string;
+  description?: string;
+  capacity: number;
+  coworkingSpace: string | CoworkingSpace;
+  createdAt: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   count?: number;

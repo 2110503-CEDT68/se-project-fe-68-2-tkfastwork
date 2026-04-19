@@ -6,6 +6,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { CoworkingSpace } from "@/types";
 import EditSpaceModal from "@/components/EditSpaceModal";
 import VisibilityToggle from "@/components/VisibilityToggle";
+import RoomsModal from "@/components/RoomsModal";
 
 export default function MySpacesPage() {
   const { data: session } = useSession();
@@ -13,6 +14,7 @@ export default function MySpacesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editingSpace, setEditingSpace] = useState<CoworkingSpace | null>(null);
+  const [roomsSpaceId, setRoomsSpaceId] = useState<string | null>(null);
 
   const fetchSpaces = useCallback(async () => {
     if (!session?.user?.token) return;
@@ -98,6 +100,12 @@ export default function MySpacesPage() {
                     >
                       Edit
                     </button>
+                    <button
+                      onClick={() => setRoomsSpaceId(space._id)}
+                      className="bg-blue-600 text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Rooms
+                    </button>
                   </div>
                 </div>
                 
@@ -122,6 +130,16 @@ export default function MySpacesPage() {
             isOpen={true}
             onClose={handleCloseEdit}
             onUpdated={handleUpdated}
+          />
+        )}
+
+        {roomsSpaceId && (
+          <RoomsModal
+            spaceId={roomsSpaceId}
+            spaceName={spaces.find(s => s._id === roomsSpaceId)?.name || "Space"}
+            isOpen={true}
+            onClose={() => setRoomsSpaceId(null)}
+            token={session?.user?.token ?? ""}
           />
         )}
       </div>
