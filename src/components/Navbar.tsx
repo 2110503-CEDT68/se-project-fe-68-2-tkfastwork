@@ -63,6 +63,14 @@ export default function Navbar() {
                       Become Owner
                     </Link>
                   )}
+                  {isOwner && (
+                    <Link
+                      href="/my-spaces"
+                      className="text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium px-3 py-1.5 rounded transition-colors"
+                    >
+                      My Spaces
+                    </Link>
+                  )}
                   <Link
                     href="/my-requests"
                     className="text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium px-3 py-1.5 rounded transition-colors"
@@ -176,7 +184,17 @@ export default function Navbar() {
                       >
                         Become Owner
                       </Link>
-                    )}                    <Link
+                    )}
+                    {isOwner && (
+                      <Link
+                        href="/my-spaces"
+                        className="text-white/85 hover:bg-white/10 hover:text-white px-3 py-2.5 rounded text-sm font-medium transition-colors"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        My Spaces
+                      </Link>
+                    )}
+                    <Link
                       href="/my-requests"
                       className="text-white/85 hover:bg-white/10 hover:text-white px-3 py-2.5 rounded text-sm font-medium transition-colors"
                       onClick={() => setMobileOpen(false)}
