@@ -35,6 +35,8 @@ export interface CoworkingSpace {
   id: string;
   owner?: string;
   isVisible?: boolean;
+  owner?: string;
+  isVisible?: boolean;
 }
 
 export interface Reservation {
