@@ -45,6 +45,11 @@ export default function MySpacesPage() {
     setEditingSpace(null);
   };
 
+    const handleUpdated = () => {
+    setEditingSpace(null);
+    fetchSpaces();
+  };
+
   const handleVisibilityToggle = (spaceId: string, newVisible: boolean) => {
     setSpaces(prev => prev.map(space => 
       space._id === spaceId ? { ...space, isVisible: newVisible } : space
