@@ -33,6 +33,8 @@ export interface CoworkingSpace {
   opentime: string;
   closetime: string;
   id: string;
+  owner?: string;
+  isVisible?: boolean;
 }
 
 export interface Reservation {
