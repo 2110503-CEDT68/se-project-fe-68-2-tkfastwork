@@ -96,7 +96,7 @@ export default function MyRequestsPage() {
                 
                 {req.status === 'approved' && (
                   <div className="mt-4 p-4 bg-green-50 border-l-4 border-green-400 text-green-700 text-sm">
-                    Your request has been approved! You are now an owner.
+                    Your request has been approved!. Please logout and login again to become owner.
                   </div>
                 )}
               </div>
