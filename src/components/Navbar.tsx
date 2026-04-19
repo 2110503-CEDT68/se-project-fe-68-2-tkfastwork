@@ -45,27 +45,25 @@ export default function Navbar() {
               >
                 My Bookings
               </Link>
-              {/*
-              <Link
-                href="/recommend"
-                className="text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium px-3 py-1.5 rounded transition-colors"
-              >
-                AI Suggest
-              </Link>
-              */}
               {!isAdmin && (
                 <>
                   {!isOwner && (
                     <Link
-                      href="/owner/request"
                       href="/become-owner"
                       className="text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium px-3 py-1.5 rounded transition-colors"
                     >
                       Become Owner
                     </Link>
                   )}
+                  {isOwner && (
+                    <Link
+                      href="/my-spaces"
+                      className="text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium px-3 py-1.5 rounded transition-colors"
+                    >
+                      My Spaces
+                    </Link>
+                  )}
                   <Link
-                    href="/owner/status"
                     href="/my-requests"
                     className="text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium px-3 py-1.5 rounded transition-colors"
                   >
@@ -161,26 +159,27 @@ export default function Navbar() {
                 >
                   My Bookings
                 </Link>
-                <Link
-                  href="/recommend"
-                  className="text-white/85 hover:bg-white/10 hover:text-white px-3 py-2.5 rounded text-sm font-medium transition-colors"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  AI Suggest
-                </Link>
                 {!isAdmin && (
                   <>
                     {!isOwner && (
                       <Link
-                        href="/owner/request"
                         href="/become-owner"
                         className="text-white/85 hover:bg-white/10 hover:text-white px-3 py-2.5 rounded text-sm font-medium transition-colors"
                         onClick={() => setMobileOpen(false)}
                       >
                         Become Owner
                       </Link>
-                    )}                    <Link
-                      href="/owner/status"
+                    )}
+                    {isOwner && (
+                      <Link
+                        href="/my-spaces"
+                        className="text-white/85 hover:bg-white/10 hover:text-white px-3 py-2.5 rounded text-sm font-medium transition-colors"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        My Spaces
+                      </Link>
+                    )}
+                    <Link
                       href="/my-requests"
                       className="text-white/85 hover:bg-white/10 hover:text-white px-3 py-2.5 rounded text-sm font-medium transition-colors"
                       onClick={() => setMobileOpen(false)}
@@ -214,16 +213,6 @@ export default function Navbar() {
                 <>
                   <span className="text-white/70 text-sm self-center flex items-center gap-2">
                     Hi, {session.user?.name ?? session.user?.email}
-                    {isAdmin && (
-                      <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                        Admin
-                      </span>
-                    )}
-                    {isOwner && (
-                      <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                        Owner
-                      </span>
-                    )}
                   </span>
                   <button onClick={handleSignOut} className={ghostBtn}>
                     Sign Out

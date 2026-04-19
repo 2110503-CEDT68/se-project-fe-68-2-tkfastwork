@@ -32,6 +32,8 @@ export interface CoworkingSpace {
   tel: string;
   opentime: string;
   closetime: string;
+  description: string;
+  pics: string[];
   id: string;
   owner?: string;
   isVisible?: boolean;
