@@ -20,6 +20,10 @@ interface BookingData {
     opentime?: string;
     closetime?: string;
   };
+  room?: {
+    name: string;
+    capacity?: number;
+  };
   qrCode?: string;
 }
 
@@ -182,6 +186,9 @@ export default function BookingVerificationPage() {
           <div className="text-[0.68rem] font-bold uppercase tracking-wider text-gray-400 mb-3.5">
             Appointment
           </div>
+          {data.room?.name && (
+            <InfoRow label="Room" value={data.room.name} />
+          )}
           <InfoRow label="Date" value={dateStr} />
           <InfoRow
             label="Time"

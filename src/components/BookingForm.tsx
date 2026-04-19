@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import TimeSlotPicker from "@/components/TimeSlotPicker";
-import { Reservation } from "@/types";
+import { Reservation, Room } from "@/types";
 
 interface BookingFormProps {
   spaceId: string;
@@ -86,25 +86,46 @@ export default function BookingForm({
     startISO: string;
     endISO: string;
     qrCode?: string;
+    roomName?: string;
   } | null>(null);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState("");
+  const [roomsLoading, setRoomsLoading] = useState(true);
   const [existingReservations, setExistingReservations] = useState<
     Reservation[]
   >([]);
 
   const todayValue = getBangkokTodayDateValue();
 
-  // Fetch existing reservations for this space to show booked slots
+  // Fetch rooms for this space
   useEffect(() => {
-    if (!session?.user?.token || !spaceId) return;
-    fetch(
-      `${BACKEND_URL}/api/v1/coworkingSpaces/${spaceId}/reservations`,
-      {
-        headers: {
-          Authorization: `Bearer ${session.user.token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    )
+    if (!spaceId) return;
+    setRoomsLoading(true);
+    fetch(`${BACKEND_URL}/api/v1/coworkingSpaces/${spaceId}/rooms`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) {
+          setRooms(data.data as Room[]);
+        }
+      })
+      .catch(() => {
+        // non-fatal
+      })
+      .finally(() => setRoomsLoading(false));
+  }, [spaceId]);
+
+  // Fetch reservations for the selected room to show booked slots
+  useEffect(() => {
+    if (!session?.user?.token || !selectedRoomId) {
+      setExistingReservations([]);
+      return;
+    }
+    fetch(`${BACKEND_URL}/api/v1/rooms/${selectedRoomId}/reservations`, {
+      headers: {
+        Authorization: `Bearer ${session.user.token}`,
+        "Content-Type": "application/json",
+      },
+    })
       .then((r) => r.json())
       .then((data) => {
         if (data.success && Array.isArray(data.data)) {
@@ -112,9 +133,9 @@ export default function BookingForm({
         }
       })
       .catch(() => {
-        // non-fatal: existing reservations won't be shown as booked
+        // non-fatal
       });
-  }, [session, spaceId]);
+  }, [session, selectedRoomId]);
 
   // Reset time selections when date changes
   function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -127,6 +148,11 @@ export default function BookingForm({
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+
+    if (!selectedRoomId) {
+      setError("Please select a room to book.");
+      return;
+    }
 
     if (!selectedDate || !selectedStart || !selectedEnd) {
       setError("Please select a date, start time, and end time.");
@@ -162,17 +188,23 @@ export default function BookingForm({
             Authorization: `Bearer ${session.user.token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ apptDate: startISO, apptEnd: endISO }),
+          body: JSON.stringify({
+            apptDate: startISO,
+            apptEnd: endISO,
+            room: selectedRoomId,
+          }),
         }
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Booking failed");
 
       const reservation = data.data || data;
+      const selectedRoom = rooms.find((r) => r._id === selectedRoomId);
       setSuccess({
         startISO,
         endISO,
         qrCode: reservation.qrCode,
+        roomName: selectedRoom?.name,
       });
 
       // Redirect to bookings after a short delay
@@ -217,6 +249,11 @@ export default function BookingForm({
           </div>
           {spaceName && (
             <div className="text-sm text-gray-500 mt-1">{spaceName}</div>
+          )}
+          {success.roomName && (
+            <div className="text-sm text-gray-900 font-semibold mt-0.5">
+              Room: {success.roomName}
+            </div>
           )}
           <div className="text-sm text-gray-500">
             {startText} – {endText}
@@ -266,6 +303,52 @@ export default function BookingForm({
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* Room picker */}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[0.82rem] font-semibold text-gray-900">
+            Room
+          </span>
+          {roomsLoading ? (
+            <p className="text-sm text-gray-400">Loading rooms...</p>
+          ) : rooms.length === 0 ? (
+            <div className="bg-amber-50 text-amber-700 border border-amber-200 px-4 py-3 rounded text-sm font-medium">
+              This space has no rooms available to book yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {rooms.map((room) => {
+                const selected = selectedRoomId === room._id;
+                return (
+                  <button
+                    key={room._id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedRoomId(room._id);
+                      setError("");
+                    }}
+                    className={
+                      "text-left px-3.5 py-2.5 rounded border text-sm transition-colors " +
+                      (selected
+                        ? "bg-primary text-white border-primary"
+                        : "bg-white text-gray-700 border-gray-200 hover:border-primary hover:text-primary")
+                    }
+                  >
+                    <div className="font-semibold">{room.name}</div>
+                    <div
+                      className={
+                        "text-xs mt-0.5 " +
+                        (selected ? "text-white/80" : "text-gray-400")
+                      }
+                    >
+                      Capacity: {room.capacity}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         {/* Date picker */}
         <div className="flex flex-col gap-1.5">
           <label
@@ -282,6 +365,7 @@ export default function BookingForm({
             onChange={handleDateChange}
             className={inputCls}
             required
+            disabled={!selectedRoomId}
           />
         </div>
 
@@ -325,7 +409,7 @@ export default function BookingForm({
 
         <button
           type="submit"
-          disabled={loading || !selectedDate || !selectedStart || !selectedEnd}
+          disabled={loading || !selectedRoomId || !selectedDate || !selectedStart || !selectedEnd}
           className="bg-primary hover:bg-primary-dark text-white font-semibold px-7 py-3 rounded text-base transition-colors disabled:opacity-45 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
         >
           {loading ? (

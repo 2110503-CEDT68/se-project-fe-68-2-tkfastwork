@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Reservation, CoworkingSpace, User } from "@/types";
+import { Reservation, CoworkingSpace, User, Room } from "@/types";
 
 interface BookingCardProps {
   reservation: Reservation;
@@ -54,10 +54,13 @@ export default function BookingCard({
     typeof reservation.coworkingSpace === "object"
       ? (reservation.coworkingSpace as CoworkingSpace)
       : null;
+  const room =
+    typeof reservation.room === "object" ? (reservation.room as Room) : null;
   const user =
     typeof reservation.user === "object" ? (reservation.user as User) : null;
 
   const spaceName = space?.name ?? "Unknown Space";
+  const roomName = room?.name ?? "";
   const address = space?.address ?? "";
   const qrCode = reservation.qrCode ?? "";
   const locked = isWithinOneHour(reservation.apptDate);
@@ -80,7 +83,7 @@ export default function BookingCard({
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex gap-4 items-start sm:flex-row flex-col">
       <div className="flex-1 min-w-0">
         <div className="font-bold text-gray-900 text-[0.95rem] mb-1">
-          {spaceName}
+          {roomName ? `${roomName} · ${spaceName}` : spaceName}
         </div>
         {address && (
           <div className="text-sm text-gray-400 mb-1">{address}</div>
@@ -175,6 +178,14 @@ export default function BookingCard({
               <div className="font-bold text-base">{spaceName}</div>
               {address && (
                 <div className="text-sm text-white/70 mt-0.5">{address}</div>
+              )}
+              {roomName && (
+                <div className="mt-2 pt-2 border-t border-white/20">
+                  <div className="text-[0.7rem] font-bold uppercase tracking-wide text-white/65 mb-0.5">
+                    Room
+                  </div>
+                  <div className="font-semibold text-sm">{roomName}</div>
+                </div>
               )}
             </div>
 

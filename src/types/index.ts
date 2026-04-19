@@ -45,6 +45,7 @@ export interface Reservation {
   apptEnd: string;
   user: string | User;
   coworkingSpace: string | CoworkingSpace;
+  room: string | Room;
   qrCode?: string;
   createdAt: string;
 }
