@@ -189,6 +189,14 @@ export default function RegisterPage() {
             />
           </div>
 
+          <p className="text-[0.7rem] text-gray-400 leading-normal mb-1">
+            By registering, you agree to our {" "}
+            <Link href="/privacy-policy" className="text-primary hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+
           <button
             type="submit"
             disabled={loading}
