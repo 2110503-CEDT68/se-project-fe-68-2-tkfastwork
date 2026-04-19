@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { CoworkingSpace } from "@/types";
 import EditSpaceModal from "@/components/EditSpaceModal";
+import VisibilityToggle from "@/components/VisibilityToggle";
 
 export default function MySpacesPage() {
   const { data: session } = useSession();
@@ -44,9 +45,10 @@ export default function MySpacesPage() {
     setEditingSpace(null);
   };
 
-  const handleUpdated = () => {
-    setEditingSpace(null);
-    fetchSpaces();
+  const handleVisibilityToggle = (spaceId: string, newVisible: boolean) => {
+    setSpaces(prev => prev.map(space => 
+      space._id === spaceId ? { ...space, isVisible: newVisible } : space
+    ));
   };
 
   if (loading) return <LoadingSpinner />;
@@ -79,11 +81,12 @@ export default function MySpacesPage() {
                     <p className="text-gray-500 text-sm">{space.address}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                      space.isVisible !== false ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                    }`}>
-                      {space.isVisible !== false ? 'Visible' : 'Hidden'}
-                    </span>
+                    <VisibilityToggle
+                      spaceId={space._id}
+                      initialVisible={space.isVisible !== false}
+                      token={session?.user?.token ?? ""}
+                      onToggle={(newVisible) => handleVisibilityToggle(space._id, newVisible)}
+                    />
                     <button
                       onClick={() => handleEdit(space)}
                       className="bg-primary text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-primary-dark transition-colors"

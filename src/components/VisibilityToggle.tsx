@@ -6,9 +6,10 @@ interface VisibilityToggleProps {
   spaceId: string;
   initialVisible: boolean;
   token: string;
+  onToggle?: (newVisible: boolean) => void;
 }
 
-export default function VisibilityToggle({ spaceId, initialVisible, token }: VisibilityToggleProps) {
+export default function VisibilityToggle({ spaceId, initialVisible, token, onToggle }: VisibilityToggleProps) {
   const [isVisible, setIsVisible] = useState(initialVisible);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -27,6 +28,7 @@ export default function VisibilityToggle({ spaceId, initialVisible, token }: Vis
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to update visibility");
       setIsVisible(data.data.isVisible);
+      onToggle?.(data.data.isVisible);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error");
     } finally {
