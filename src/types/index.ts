@@ -7,6 +7,24 @@ export interface User {
   createdAt: string;
 }
 
+export interface CoworkingSpaceRequest {
+  _id: string;
+  submitter: string | User;
+  name: string;
+  address: string;
+  tel: string;
+  opentime: string;
+  closetime: string;
+  description: string;
+  pics: string[];
+  proofOfOwnership: string;
+  status: "pending" | "approved" | "rejected";
+  rejectionReason?: string;
+  reviewedBy?: string | User;
+  reviewedAt?: string;
+  createdAt: string;
+}
+
 export interface CoworkingSpace {
   _id: string;
   name: string;
