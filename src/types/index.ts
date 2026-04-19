@@ -3,7 +3,25 @@ export interface User {
   name: string;
   email: string;
   tel: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "owner";
+  createdAt: string;
+}
+
+export interface CoworkingSpaceRequest {
+  _id: string;
+  submitter: string | User;
+  name: string;
+  address: string;
+  tel: string;
+  opentime: string;
+  closetime: string;
+  description: string;
+  pics: string[];
+  proofOfOwnership: string;
+  status: "pending" | "approved" | "rejected";
+  rejectionReason?: string;
+  reviewedBy?: string | User;
+  reviewedAt?: string;
   createdAt: string;
 }
 
@@ -15,6 +33,8 @@ export interface CoworkingSpace {
   opentime: string;
   closetime: string;
   id: string;
+  owner?: string;
+  isVisible?: boolean;
 }
 
 export interface Reservation {
