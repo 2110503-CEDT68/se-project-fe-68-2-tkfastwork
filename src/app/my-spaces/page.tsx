@@ -63,7 +63,15 @@ export default function MySpacesPage() {
   return (
     <div className="bg-slate-50 min-h-screen py-12 px-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-8">My Co-working Spaces</h1>
+        <div className="flex items-center justify-between gap-4 mb-8">
+          <h1 className="text-2xl font-bold">My Co-working Spaces</h1>
+          <a
+            href="/become-owner"
+            className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
+          >
+            + Add New Space
+          </a>
+        </div>
 
         {error && (
           <div className="bg-red-50 text-red-600 border border-red-200 px-4 py-3 rounded text-sm mb-6">
