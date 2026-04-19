@@ -9,6 +9,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isAdmin = session?.user?.role === "admin";
+  const isOwner = session?.user?.role === "owner";
 
   function handleSignOut() {
     signOut({ callbackUrl: "/" });
@@ -50,6 +51,24 @@ export default function Navbar() {
               >
                 AI Suggest
               </Link>
+              {!isAdmin && (
+                <>
+                  {!isOwner && (
+                    <Link
+                      href="/owner/request"
+                      className="text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium px-3 py-1.5 rounded transition-colors"
+                    >
+                      Become Owner
+                    </Link>
+                  )}
+                  <Link
+                    href="/owner/status"
+                    className="text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium px-3 py-1.5 rounded transition-colors"
+                  >
+                    My Requests
+                  </Link>
+                </>
+              )}
               {isAdmin && (
                 <Link
                   href="/admin/bookings"
@@ -71,6 +90,11 @@ export default function Navbar() {
                 {isAdmin && (
                   <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                     Admin
+                  </span>
+                )}
+                {isOwner && (
+                  <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    Owner
                   </span>
                 )}
               </span>
@@ -132,6 +156,25 @@ export default function Navbar() {
                 >
                   AI Suggest
                 </Link>
+                {!isAdmin && (
+                  <>
+                    {!isOwner && (
+                      <Link
+                        href="/owner/request"
+                        className="text-white/85 hover:bg-white/10 hover:text-white px-3 py-2.5 rounded text-sm font-medium transition-colors"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        Become Owner
+                      </Link>
+                    )}                    <Link
+                      href="/owner/status"
+                      className="text-white/85 hover:bg-white/10 hover:text-white px-3 py-2.5 rounded text-sm font-medium transition-colors"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      My Requests
+                    </Link>
+                  </>
+                )}
                 {isAdmin && (
                   <Link
                     href="/admin/bookings"
@@ -151,6 +194,11 @@ export default function Navbar() {
                     {isAdmin && (
                       <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                         Admin
+                      </span>
+                    )}
+                    {isOwner && (
+                      <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        Owner
                       </span>
                     )}
                   </span>
