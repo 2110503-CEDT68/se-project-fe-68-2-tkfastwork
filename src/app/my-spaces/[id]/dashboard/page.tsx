@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import autoTable from "jspdf-autotable";
 
 interface StatData {
   totalBookings: number;
@@ -99,18 +99,111 @@ export default function DashboardPage() {
   };
 
   const exportPDF = async () => {
-    if (!dashboardRef.current) return;
     setIsExporting(true);
     try {
-      const canvas = await html2canvas(dashboardRef.current, { scale: 2, useCORS: true });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
+      if (!stats) return;
+
+      const doc = new jsPDF();
+      const margin = 14;
       
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      // Title
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text("Business Dashboard Report", margin, 22);
       
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`dashboard-${spaceId}.pdf`);
+      // Content
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(100);
+      doc.text(`Report Period: ${appliedFrom} to ${appliedTo}`, margin, 31);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, 37);
+      
+      // Section: Overview
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(0);
+      doc.text("1. Overall Metrics", margin, 52);
+      
+      autoTable(doc, {
+        startY: 57,
+        head: [['Metric', 'Value']],
+        body: [
+          ['Total Bookings', stats.totalBookings.toString()],
+          ['Total Unique Users', stats.totalUniqueUsers.toString()],
+          ['Average Booking Duration', `${stats.avgBookingDurationMinutes} mins`]
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [44, 62, 80] },
+        styles: { fontSize: 11, cellPadding: 6 }
+      });
+      
+      // Demographic
+      let finalY = (doc as any).lastAutoTable.finalY || 57;
+      doc.setFontSize(14);
+      doc.text("2. Demographics", margin, finalY + 15);
+      
+      autoTable(doc, {
+        startY: finalY + 20,
+        head: [['Age Group', 'Percentage']],
+        body: stats.demographicBreakdown.byAgeGroup.map(a => [a.ageGroup, `${a.percentage}%`]),
+        theme: 'striped',
+        margin: { top: 10, left: margin },
+        tableWidth: 80,
+      });
+
+      autoTable(doc, {
+        startY: finalY + 20,
+        head: [['Gender', 'Percentage']],
+        body: stats.demographicBreakdown.byGender.map(g => [g.gender, `${g.percentage}%`]),
+        theme: 'striped',
+        margin: { left: margin + 90 },
+        tableWidth: 80,
+      });
+
+      finalY = Math.max((doc as any).lastAutoTable.finalY, finalY + 40);
+
+      autoTable(doc, {
+        startY: finalY + 10,
+        head: [['Occupation', 'Percentage']],
+        body: stats.demographicBreakdown.byOccupation.map(o => [o.occupation, `${o.percentage}%`]),
+        theme: 'striped',
+      });
+
+      finalY = (doc as any).lastAutoTable.finalY || finalY;
+      
+      // Insights
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text("3. AI Insights & Alerts", margin, 22);
+      
+      autoTable(doc, {
+        startY: 28,
+        head: [['Type', 'Message', 'Severity']],
+        body: insights.map(i => [i.type.replace('_', ' ').toUpperCase(), i.message, i.severity.toUpperCase()]),
+        theme: 'grid',
+        styles: { cellWidth: 'wrap', cellPadding: 4 },
+        columnStyles: {
+            0: {cellWidth: 40},
+            1: {cellWidth: 100},
+            2: {cellWidth: 30, fontStyle: 'bold'}
+        },
+        headStyles: { fillColor: [243, 156, 18], textColor: 255 }
+      });
+      
+      // Room utilization
+      finalY = (doc as any).lastAutoTable.finalY || 30;
+      doc.setFontSize(14);
+      doc.text("4. Room Utilization", margin, finalY + 15);
+      
+      autoTable(doc, {
+        startY: finalY + 22,
+        head: [['Room Name', 'Type', 'Bookings', 'Hours Booked']],
+        body: stats.roomUtilization.map(ru => [ru.roomName, ru.roomType, ru.bookingCount.toString(), ru.totalHoursBooked.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [39, 174, 96] }
+      });
+
+      doc.save(`Space_Report_${spaceId}.pdf`);
     } catch (err) {
       console.error("PDF Export failed", err);
       alert("Failed to export PDF.");
