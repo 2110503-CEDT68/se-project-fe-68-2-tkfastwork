@@ -39,6 +39,14 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [isExporting, setIsExporting] = useState(false);
 
+  // Date Filter State
+  const defaultTo = new Date().toISOString().split("T")[0];
+  const defaultFrom = new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split("T")[0];
+  const [fromDate, setFromDate] = useState(defaultFrom);
+  const [toDate, setToDate] = useState(defaultTo);
+  const [appliedFrom, setAppliedFrom] = useState(defaultFrom);
+  const [appliedTo, setAppliedTo] = useState(defaultTo);
+
   const dashboardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,15 +59,16 @@ export default function DashboardPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
+        const queryParams = `?from=${appliedFrom}&to=${appliedTo}`;
         const [statsRes, insightsRes] = await Promise.all([
           fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coworkingSpaces/${spaceId}/stats`,
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coworkingSpaces/${spaceId}/stats${queryParams}`,
             {
               headers: { Authorization: `Bearer ${session.user.token}` },
             }
           ),
           fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coworkingSpaces/${spaceId}/insights`,
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/coworkingSpaces/${spaceId}/insights${queryParams}`,
             {
               headers: { Authorization: `Bearer ${session.user.token}` },
             }
@@ -82,7 +91,12 @@ export default function DashboardPage() {
     };
 
     fetchData();
-  }, [spaceId, session, status, router]);
+  }, [spaceId, session, status, router, appliedFrom, appliedTo]);
+
+  const handleApplyFilter = () => {
+    setAppliedFrom(fromDate);
+    setAppliedTo(toDate);
+  };
 
   const exportPDF = async () => {
     if (!dashboardRef.current) return;
@@ -128,25 +142,56 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Business Dashboard</h1>
             <p className="text-gray-500 mt-1">Key metrics and insights for your coworking space</p>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push("/my-spaces")}
-              className="px-4 py-2 bg-white text-gray-700 border border-gray-300 font-medium rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Back to Spaces
-            </button>
-            <button
-              onClick={exportPDF}
-              disabled={isExporting}
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg shadow hover:opacity-90 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isExporting ? (
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-              )}
-              {isExporting ? "Exporting..." : "Export PDF"}
-            </button>
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-300 shadow-sm">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-gray-500">FROM</span>
+                <input 
+                  type="date" 
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="text-sm text-gray-800 bg-transparent focus:outline-none"
+                />
+              </div>
+              <div className="text-gray-300">|</div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-gray-500">TO</span>
+                <input 
+                  type="date" 
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="text-sm text-gray-800 bg-transparent focus:outline-none"
+                />
+              </div>
+              <button 
+                onClick={handleApplyFilter}
+                disabled={loading}
+                className="ml-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold px-2.5 py-1 rounded transition-colors disabled:opacity-50"
+              >
+                Apply
+              </button>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push("/my-spaces")}
+                className="px-4 py-2 bg-white text-gray-700 border border-gray-300 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+              >
+                Back to Spaces
+              </button>
+              <button
+                onClick={exportPDF}
+                disabled={isExporting}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg shadow hover:opacity-90 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isExporting ? (
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                )}
+                {isExporting ? "Exporting..." : "Export PDF"}
+              </button>
+            </div>
           </div>
         </div>
 
