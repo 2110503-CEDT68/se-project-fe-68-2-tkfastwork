@@ -182,21 +182,76 @@ export default function DashboardPage() {
                 Demographics Profile
               </h3>
               
-              <div className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <p className="text-xs font-semibold text-gray-500 mb-2 uppercase">By Age Group</p>
-                  <div className="flex gap-2 h-14 items-end">
+                  <div className="flex gap-1.5 h-24 items-end border-b border-gray-200 pb-1">
                     {stats.demographicBreakdown.byAgeGroup.map(age => (
-                      <div key={age.ageGroup} className="flex-1 flex flex-col justify-end group">
-                        <div className="text-[0.65rem] text-center text-gray-500 mb-1 opacity-100 transition-opacity">{age.percentage}%</div>
+                      <div key={age.ageGroup} className="flex-1 flex flex-col justify-end group relative items-center">
+                        <div className="text-[0.65rem] text-center text-white bg-gray-800 rounded px-1.5 py-0.5 mb-1 opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full pb-1 z-10 whitespace-nowrap">
+                          {age.percentage}%
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-t-gray-800 border-x-transparent border-x-[3px] border-t-[3px]"></div>
+                        </div>
                         <div 
-                          className="bg-blue-400 rounded-t-sm w-full transition-all group-hover:bg-blue-500" 
-                          style={{ height: `${Math.max(age.percentage, 5)}%` }}
+                          className="bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-sm w-full transition-all group-hover:from-blue-700 group-hover:to-blue-500" 
+                          style={{ height: `${Math.max(age.percentage, 2)}%` }}
                         ></div>
-                        <div className="text-[0.65rem] text-center font-medium mt-1 text-gray-700 truncate">{age.ageGroup}</div>
+                        <div className="text-[0.65rem] text-center font-medium mt-1 text-gray-700 truncate w-full">{age.ageGroup}</div>
                       </div>
                     ))}
                   </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 mb-2 uppercase">By Gender</p>
+                  <div className="flex flex-col gap-2">
+                    {stats.demographicBreakdown.byGender.map(gender => (
+                      <div key={gender.gender} className="w-full bg-white p-2.5 rounded-lg border border-gray-200 relative overflow-hidden group">
+                         <div className="absolute inset-y-0 left-0 bg-indigo-50 border-l-4 border-indigo-500 transition-all group-hover:bg-indigo-100" style={{width: `${gender.percentage}%`}}></div>
+                         <div className="flex justify-between items-center relative z-10">
+                           <div className="text-sm font-semibold text-gray-800 capitalize flex items-center gap-1.5">
+                             {gender.gender === 'male' && <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m0-8h-8m8 0L8 16" /></svg>}
+                             {gender.gender === 'female' && <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v6m-3-3h6M12 15a6 6 0 100-12 6 6 0 000 12z" /></svg>}
+                             {gender.gender !== 'male' && gender.gender !== 'female' && <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>}
+                             {gender.gender}
+                           </div>
+                           <div className="text-xs font-bold text-gray-600">{gender.percentage}% <span className="text-gray-400 font-normal">({gender.count})</span></div>
+                         </div>
+                      </div>
+                    ))}
+                    {stats.demographicBreakdown.byGender.length === 0 && (
+                      <div className="text-xs text-gray-400 italic">No data</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="col-span-1 sm:col-span-2 mt-2">
+                  <p className="text-xs font-semibold text-gray-500 mb-2 uppercase">Occupation Distribution</p>
+                  {stats.demographicBreakdown.byOccupation.length > 0 ? (
+                    <>
+                      <div className="flex h-3 rounded-full overflow-hidden bg-gray-200">
+                        {stats.demographicBreakdown.byOccupation.map((occ, i) => {
+                          const colors = ['bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-purple-500', 'bg-rose-500', 'bg-teal-500'];
+                          return (
+                            <div key={occ.occupation} className={`${colors[i % colors.length]}`} style={{ width: `${occ.percentage}%` }} title={`${occ.occupation} - ${occ.percentage}%`}></div>
+                          );
+                        })}
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
+                        {stats.demographicBreakdown.byOccupation.map((occ, i) => {
+                          const bgColors = ['bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-purple-500', 'bg-rose-500', 'bg-teal-500'];
+                          return (
+                            <div key={occ.occupation} className="flex items-center gap-1.5 align-middle text-xs text-gray-600">
+                              <span className={`w-2.5 h-2.5 rounded-full shadow-sm ${bgColors[i % bgColors.length]}`}></span>
+                              <span className="capitalize font-medium">{occ.occupation} <span className="text-gray-400 font-normal">({occ.percentage}%)</span></span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-xs text-gray-400 italic">No data</div>
+                  )}
                 </div>
               </div>
             </div>
