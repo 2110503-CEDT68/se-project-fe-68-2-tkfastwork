@@ -56,6 +56,8 @@ export interface Room {
   description?: string;
   capacity: number;
   coworkingSpace: string | CoworkingSpace;
+  roomType: "meeting" | "private office" | "phone booth" | string;
+  facilities: string[];
   createdAt: string;
 }
 

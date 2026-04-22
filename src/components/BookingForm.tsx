@@ -91,11 +91,29 @@ export default function BookingForm({
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState("");
   const [roomsLoading, setRoomsLoading] = useState(true);
+  const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
   const [existingReservations, setExistingReservations] = useState<
     Reservation[]
   >([]);
 
   const todayValue = getBangkokTodayDateValue();
+
+  const allFacilities = Array.from(
+    new Set(rooms.flatMap((r) => r.facilities || []))
+  ).sort();
+
+  const filteredRooms = rooms.filter((room) =>
+    selectedFacilities.every((f) => (room.facilities || []).includes(f))
+  );
+
+  function toggleFacility(facility: string) {
+    setSelectedFacilities((prev) =>
+      prev.includes(facility)
+        ? prev.filter((f) => f !== facility)
+        : [...prev, facility]
+    );
+    setSelectedRoomId(""); // Reset room selection on filter change
+  }
 
   // Fetch rooms for this space
   useEffect(() => {
@@ -315,37 +333,79 @@ export default function BookingForm({
               This space has no rooms available to book yet.
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {rooms.map((room) => {
-                const selected = selectedRoomId === room._id;
-                return (
-                  <button
-                    key={room._id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedRoomId(room._id);
-                      setError("");
-                    }}
-                    className={
-                      "text-left px-3.5 py-2.5 rounded border text-sm transition-colors " +
-                      (selected
-                        ? "bg-primary text-white border-primary"
-                        : "bg-white text-gray-700 border-gray-200 hover:border-primary hover:text-primary")
-                    }
-                  >
-                    <div className="font-semibold">{room.name}</div>
-                    <div
-                      className={
-                        "text-xs mt-0.5 " +
-                        (selected ? "text-white/80" : "text-gray-400")
-                      }
-                    >
-                      Capacity: {room.capacity}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+            <>
+              {allFacilities.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-1.5">
+                  <span className="text-[0.75rem] text-gray-500 flex items-center pr-1">Filter by:</span>
+                  {allFacilities.map((f) => {
+                    const isSelected = selectedFacilities.includes(f);
+                    return (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => toggleFacility(f)}
+                        className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                          isSelected
+                            ? "bg-primary text-white border-primary"
+                            : "bg-white text-gray-600 border-gray-300 hover:border-primary hover:text-primary"
+                        }`}
+                      >
+                        {f}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {filteredRooms.length === 0 ? (
+                <div className="bg-gray-50 text-gray-500 border border-gray-200 px-4 py-3 rounded text-sm text-center">
+                  No rooms match your selected facilities.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {filteredRooms.map((room) => {
+                    const selected = selectedRoomId === room._id;
+                    return (
+                      <button
+                        key={room._id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedRoomId(room._id);
+                          setError("");
+                        }}
+                        className={
+                          "text-left px-3.5 py-2.5 rounded border text-sm transition-colors " +
+                          (selected
+                            ? "bg-primary text-white border-primary"
+                            : "bg-white text-gray-700 border-gray-200 hover:border-primary hover:text-primary")
+                        }
+                      >
+                        <div className="font-semibold flex justify-between items-start gap-2">
+                          <span>{room.name}</span>
+                          {room.roomType && (
+                            <span className={`text-[0.65rem] uppercase tracking-wider px-1.5 py-0.5 rounded flex-shrink-0 ${selected ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}>
+                              {room.roomType}
+                            </span>
+                          )}
+                        </div>
+                        <div
+                          className={
+                            "text-xs mt-1 flex justify-between items-end " +
+                            (selected ? "text-white/80" : "text-gray-400")
+                          }
+                        >
+                          <span>Capacity: {room.capacity}</span>
+                          {room.facilities && room.facilities.length > 0 && (
+                            <span className="text-[0.7rem] max-w-[60%] truncate" title={room.facilities.join(', ')}>
+                              {room.facilities.length} ref(s)
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
 
