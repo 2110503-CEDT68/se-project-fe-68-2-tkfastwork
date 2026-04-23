@@ -4,12 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
-<<<<<<< HEAD
-=======
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
->>>>>>> aa0ec94 (dashboard-stat-1)
 
 type Severity = "info" | "warning" | "highlight";
 
@@ -336,7 +330,6 @@ export default function DashboardPage() {
                 )}
               </div>
 
-<<<<<<< HEAD
               <BreakdownBars
                 title="Gender"
                 items={stats.demographicBreakdown.byGender}
@@ -406,72 +399,6 @@ export default function DashboardPage() {
                   ))}
                 </div>
               )}
-=======
-            {/* Revenue Range Pie Chart */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
-                Revenue Range Distribution
-              </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stats.demographicBreakdown.byRevenueRange}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ payload }) => `${payload.range}: ${payload.percentage}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="count"
-                  >
-                    {stats.demographicBreakdown.byRevenueRange.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042'][index % 4]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-          
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-            {/* Room Utilization Chart */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                Room Utilization (Hours Booked)
-              </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.roomUtilization}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="roomName" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="totalHoursBooked" fill="#8884d8" name="Hours Booked" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Peak Hours Chart */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Peak Booking Hours
-              </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.peakHours}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="hour" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" fill="#82ca9d" name="Bookings" />
-                </BarChart>
-              </ResponsiveContainer>
->>>>>>> aa0ec94 (dashboard-stat-1)
             </div>
           </section>
         </div>
