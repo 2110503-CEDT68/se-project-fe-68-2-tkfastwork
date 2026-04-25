@@ -131,6 +131,7 @@ export default function DashboardPage() {
   const [appliedFrom, setAppliedFrom] = useState(defaultFrom);
   const [appliedTo, setAppliedTo] = useState(defaultTo);
   const [filterError, setFilterError] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
 
   const fetchDashboardData = useCallback(async () => {
     if (!session?.user?.token) return;
@@ -200,6 +201,65 @@ export default function DashboardPage() {
     setAppliedTo(toDate);
   };
 
+  const handleQuickSelect = (days: number) => {
+    const today = new Date();
+    const from = new Date();
+    from.setDate(today.getDate() - days);
+
+    const newTo = getDateInputValue(today);
+    const newFrom = getDateInputValue(from);
+
+    setFromDate(newFrom);
+    setToDate(newTo);
+    setFilterError("");
+    
+    setAppliedFrom(newFrom);
+    setAppliedTo(newTo);
+  };
+
+  const handleExportPDF = async () => {
+    if (!session?.user?.token) return;
+
+    try {
+      setIsExporting(true);
+      
+      const queryParams = new URLSearchParams({
+        spaceId: spaceId,
+        from: appliedFrom,
+        to: appliedTo,
+      });
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/reports/pdf?${queryParams}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.user.token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to download PDF report");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Report_${appliedFrom}_to_${appliedTo}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF Export failed", err);
+      alert("Failed to export PDF. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const maxPeakCount = useMemo(() => {
     if (!stats?.peakHours.length) return 0;
     return Math.max(...stats.peakHours.map((peak) => peak.count));
@@ -253,6 +313,35 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center lg:justify-end gap-2 text-xs">
+              <span className="text-gray-500 font-medium mr-1">Quick view:</span>
+              <button 
+                onClick={() => handleQuickSelect(0)} 
+                className="rounded-md bg-gray-200 px-3 py-1.5 font-semibold text-gray-700 hover:bg-gray-300 transition-colors"
+              >
+                Today
+              </button>
+              <button 
+                onClick={() => handleQuickSelect(7)} 
+                className="rounded-md bg-gray-200 px-3 py-1.5 font-semibold text-gray-700 hover:bg-gray-300 transition-colors"
+              >
+                7 Days
+              </button>
+              <button 
+                onClick={() => handleQuickSelect(30)} 
+                className="rounded-md bg-gray-200 px-3 py-1.5 font-semibold text-gray-700 hover:bg-gray-300 transition-colors"
+              >
+                30 Days
+              </button>
+              <button 
+                onClick={() => handleQuickSelect(365)} 
+                className="rounded-md bg-gray-200 px-3 py-1.5 font-semibold text-gray-700 hover:bg-gray-300 transition-colors"
+              >
+                1 Year
+              </button>
+            </div>
+
+            {/* Date Picker แบบกำหนดเอง */}
             <div className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-3 shadow-sm sm:flex-row sm:items-center">
               <label className="flex items-center gap-2 text-sm text-gray-700">
                 <span className="font-semibold">From</span>
@@ -272,18 +361,35 @@ export default function DashboardPage() {
                   className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-primary focus:outline-none"
                 />
               </label>
-              <button
-                onClick={handleApplyFilter}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark"
-              >
-                Apply
-              </button>
-              <button
-                onClick={() => router.push("/my-spaces")}
-                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-              >
-                Back
-              </button>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={handleApplyFilter}
+                  className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark transition-colors"
+                >
+                  Apply
+                </button>
+                
+                <button
+                  onClick={handleExportPDF}
+                  disabled={isExporting}
+                  className="flex items-center justify-center gap-2 rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isExporting ? (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                  ) : (
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  )}
+                  {isExporting ? "Exporting..." : "Export"}
+                </button>
+
+                <button
+                  onClick={() => router.push("/my-spaces")}
+                  className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Back
+                </button>
+              </div>
             </div>
             {filterError && <p className="text-sm text-red-600">{filterError}</p>}
           </div>
@@ -313,15 +419,15 @@ export default function DashboardPage() {
                 ) : (
                   <div className="mt-3 flex h-32 items-end gap-2 border-b border-gray-200 pb-2">
                     {stats.demographicBreakdown.byAgeGroup.map((item) => (
-                      <div key={item.ageGroup} className="flex min-w-0 flex-1 flex-col items-center justify-end">
-                        <span className="mb-1 text-xs font-semibold text-gray-600">
+                      <div key={item.ageGroup} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end">
+                        <span className="mb-1 text-[10px] font-semibold text-gray-600">
                           {formatPercent(item.percentage)}
                         </span>
                         <div
-                          className="w-full rounded-t bg-blue-500"
-                          style={{ height: `${Math.max(item.percentage, 2)}%` }}
+                          className="w-full rounded-t bg-blue-500 transition-all duration-500"
+                          style={{ height: `${Math.max(item.percentage, 4)}%` }}
                         />
-                        <span className="mt-2 w-full truncate text-center text-xs text-gray-600">
+                        <span className="mt-2 w-full truncate text-center text-[10px] text-gray-600">
                           {item.ageGroup}
                         </span>
                       </div>
