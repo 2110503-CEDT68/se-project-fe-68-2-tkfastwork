@@ -4,6 +4,10 @@ export interface User {
   email: string;
   tel: string;
   role: "user" | "admin" | "owner";
+  dateOfBirth: string;
+  occupation: string;
+  gender: "male" | "female" | "non-binary" | "other" | "prefer not to say";
+  revenue: number;
   createdAt: string;
 }
 

@@ -12,6 +12,10 @@ export default function RegisterPage() {
   const [telephone, setTelephone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [occupation, setOccupation] = useState("");
+  const [gender, setGender] = useState("");
+  const [revenue, setRevenue] = useState("0");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -20,8 +24,13 @@ export default function RegisterPage() {
     if (!name.trim()) return "Full name is required.";
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) return "Please enter a valid email address.";
-    if (telephone && !/^\d{10}$/.test(telephone))
+    if (!telephone.trim()) return "Telephone number is required.";
+    if (!/^\d{10}$/.test(telephone))
       return "Telephone must be exactly 10 digits.";
+    if (!dateOfBirth) return "Date of birth is required.";
+    if (!occupation.trim()) return "Occupation is required.";
+    if (!gender) return "Gender is required.";
+    if (isNaN(Number(revenue)) || Number(revenue) < 0) return "Revenue must be a non-negative number.";
     if (password.length < 6) return "Password must be at least 6 characters.";
     if (password !== confirmPassword) return "Passwords do not match.";
     return null;
@@ -40,8 +49,16 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const body: Record<string, string> = { name, email, password };
-      if (telephone) body.tel = telephone;
+      const body = {
+        name,
+        email,
+        password,
+        tel: telephone,
+        dateOfBirth,
+        occupation,
+        gender,
+        revenue: Number(revenue),
+      };
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/register`,
@@ -128,8 +145,90 @@ export default function RegisterPage() {
               onChange={(e) => setTelephone(e.target.value)}
               className="w-full px-3.5 py-2.5 border border-gray-200 rounded text-sm text-gray-900 bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 placeholder:text-gray-400"
               placeholder="e.g. 0812345678"
+              required
               autoComplete="tel"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-[0.82rem] font-semibold text-gray-900"
+                htmlFor="regDob"
+              >
+                Date of Birth
+              </label>
+              <input
+                type="date"
+                id="regDob"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                className="w-full px-3.5 py-2.5 border border-gray-200 rounded text-sm text-gray-900 bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-[0.82rem] font-semibold text-gray-900"
+                htmlFor="regGender"
+              >
+                Gender
+              </label>
+              <select
+                id="regGender"
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className="w-full px-3.5 py-2.5 border border-gray-200 rounded text-sm text-gray-900 bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                required
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="non-binary">Non-binary</option>
+                <option value="other">Other</option>
+                <option value="prefer not to say">Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-[0.82rem] font-semibold text-gray-900"
+                htmlFor="regOccupation"
+              >
+                Occupation
+              </label>
+              <input
+                type="text"
+                id="regOccupation"
+                value={occupation}
+                onChange={(e) => setOccupation(e.target.value)}
+                className="w-full px-3.5 py-2.5 border border-gray-200 rounded text-sm text-gray-900 bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                placeholder="Your job"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-[0.82rem] font-semibold text-gray-900"
+                htmlFor="regRevenue"
+              >
+                Revenue
+              </label>
+              <input
+                type="number"
+                id="regRevenue"
+                value={revenue}
+                onChange={(e) => setRevenue(e.target.value)}
+                className="w-full px-3.5 py-2.5 border border-gray-200 rounded text-sm text-gray-900 bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                placeholder="0"
+                min="0"
+                required
+              />
+            </div>
           </div>
 
           <div className="flex flex-col gap-1.5">

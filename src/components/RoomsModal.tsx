@@ -21,6 +21,8 @@ export default function RoomsModal({ spaceId, spaceName, isOpen, onClose, token 
     name: "",
     description: "",
     capacity: "",
+    roomType: "meeting",
+    facilities: "",
   });
 
   const fetchRooms = useCallback(async () => {
@@ -46,18 +48,18 @@ export default function RoomsModal({ spaceId, spaceName, isOpen, onClose, token 
   useEffect(() => {
     if (isOpen) {
       fetchRooms();
-      setFormData({ name: "", description: "", capacity: "" });
+      setFormData({ name: "", description: "", capacity: "", roomType: "meeting", facilities: "" });
       setEditingRoom(null);
     }
   }, [isOpen, fetchRooms]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const resetForm = () => {
-    setFormData({ name: "", description: "", capacity: "" });
+    setFormData({ name: "", description: "", capacity: "", roomType: "meeting", facilities: "" });
     setEditingRoom(null);
   };
 
@@ -67,6 +69,8 @@ export default function RoomsModal({ spaceId, spaceName, isOpen, onClose, token 
       name: room.name,
       description: room.description || "",
       capacity: String(room.capacity),
+      roomType: room.roomType || "meeting",
+      facilities: (room.facilities || []).join(", "),
     });
   };
 
@@ -74,6 +78,9 @@ export default function RoomsModal({ spaceId, spaceName, isOpen, onClose, token 
     if (!formData.name.trim()) return "Room name is required";
     if (!/^\d+$/.test(formData.capacity) || parseInt(formData.capacity) < 1) {
       return "Capacity must be a positive number";
+    }
+    if (!["meeting", "private office", "phone booth"].includes(formData.roomType)) {
+      return "Invalid room type";
     }
     return null;
   };
@@ -94,6 +101,8 @@ export default function RoomsModal({ spaceId, spaceName, isOpen, onClose, token 
         name: formData.name,
         description: formData.description || undefined,
         capacity: parseInt(formData.capacity),
+        roomType: formData.roomType,
+        facilities: formData.facilities.split(",").map(f => f.trim()).filter(f => f !== ""),
       };
 
       const url = editingRoom
@@ -222,6 +231,37 @@ export default function RoomsModal({ spaceId, spaceName, isOpen, onClose, token 
                   required
                 />
               </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Room Type *
+                </label>
+                <select
+                  name="roomType"
+                  value={formData.roomType}
+                  onChange={handleChange}
+                  className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  required
+                >
+                  <option value="meeting">Meeting</option>
+                  <option value="private office">Private Office</option>
+                  <option value="phone booth">Phone Booth</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Facilities (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  name="facilities"
+                  value={formData.facilities}
+                  onChange={handleChange}
+                  placeholder="e.g., WiFi, Projector, Whiteboard"
+                  className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
             </div>
 
             <div className="flex gap-2 mt-4 pt-3 border-t border-gray-200">
@@ -260,7 +300,19 @@ export default function RoomsModal({ spaceId, spaceName, isOpen, onClose, token 
                         {room.description && (
                           <p className="text-xs text-gray-600">{room.description}</p>
                         )}
-                        <p className="text-xs text-gray-500 mt-1">Capacity: {room.capacity}</p>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                          <p className="text-xs text-gray-500">Capacity: {room.capacity}</p>
+                          <p className="text-xs text-gray-500 italic">Type: {room.roomType}</p>
+                        </div>
+                        {room.facilities && room.facilities.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {room.facilities.map((f, i) => (
+                              <span key={i} className="text-[10px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded">
+                                {f}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-1 ml-2">
                         <button

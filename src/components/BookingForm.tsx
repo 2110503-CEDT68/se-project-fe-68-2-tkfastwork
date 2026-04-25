@@ -396,7 +396,7 @@ export default function BookingForm({
                           <span>Capacity: {room.capacity}</span>
                           {room.facilities && room.facilities.length > 0 && (
                             <span className="text-[0.7rem] max-w-[60%] truncate" title={room.facilities.join(', ')}>
-                              {room.facilities.length} ref(s)
+                              {room.facilities.length} facility(s)
                             </span>
                           )}
                         </div>
