@@ -19,7 +19,7 @@ export default function SpacesBrowser({ spaces }: SpacesBrowserProps) {
     async function fetchAllRooms() {
       setLoadingRooms(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/rooms`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/rooms?select=facilities,coworkingSpace`);
         const data = await res.json();
         if (data.success) {
           setRooms(data.data);
@@ -41,26 +41,18 @@ export default function SpacesBrowser({ spaces }: SpacesBrowserProps) {
 
   const toggleFacility = (facility: string) => {
     setSelectedFacilities(prev =>
-      prev.includes(facility)
-        ? prev.filter(f => f !== facility)
-        : [...prev, facility]
+      prev.includes(facility) ? prev.filter(f => f !== facility) : [...prev, facility]
     );
   };
 
   const filtered = useMemo(() => {
     let result = spaces;
 
-    // Filter by search query
     if (query.trim() !== "") {
       const q = query.toLowerCase();
-      result = result.filter(
-        (s) =>
-          s.name.toLowerCase().includes(q) ||
-          (s.address || "").toLowerCase().includes(q)
-      );
+      result = result.filter(s => s.name.toLowerCase().includes(q) || (s.address || "").toLowerCase().includes(q));
     }
 
-    // Filter by facilities (Space must have at least one room with ALL selected facilities)
     if (selectedFacilities.length > 0) {
       result = result.filter(space => {
         const spaceRooms = rooms.filter(r => {
@@ -69,10 +61,7 @@ export default function SpacesBrowser({ spaces }: SpacesBrowserProps) {
             : r.coworkingSpace;
           return sid === space._id;
         });
-        
-        return spaceRooms.some(room => 
-          selectedFacilities.every(f => room.facilities?.includes(f))
-        );
+        return spaceRooms.some(room => selectedFacilities.every(f => room.facilities?.includes(f)));
       });
     }
 
@@ -83,18 +72,13 @@ export default function SpacesBrowser({ spaces }: SpacesBrowserProps) {
     <>
       <section className="bg-gradient-to-br from-primary to-primary-dark py-14 px-4 text-center">
         <div className="max-w-lg mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-            Find Your Perfect Workspace
-          </h1>
-          <p className="text-white/70 mt-3 text-base">
-            Browse and book co-working spaces near you
-          </p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">Find Your Perfect Workspace</h1>
+          <p className="text-white/70 mt-3 text-base">Browse and book co-working spaces near you</p>
           <SearchBar value={query} onChange={setQuery} />
         </div>
       </section>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {/* Facilities Filter UI */}
         {allFacilities.length > 0 && (
           <div className="mb-8">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Filter by Room Facilities:</h3>
@@ -104,19 +88,14 @@ export default function SpacesBrowser({ spaces }: SpacesBrowserProps) {
                   key={f}
                   onClick={() => toggleFacility(f)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    selectedFacilities.includes(f)
-                      ? "bg-primary text-white border-primary"
-                      : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
+                    selectedFacilities.includes(f) ? "bg-primary text-white border-primary" : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
                   }`}
                 >
                   {f}
                 </button>
               ))}
               {selectedFacilities.length > 0 && (
-                <button
-                  onClick={() => setSelectedFacilities([])}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
-                >
+                <button onClick={() => setSelectedFacilities([])} className="px-3 py-1.5 rounded-full text-xs font-medium text-red-600 hover:bg-red-50 transition-colors">
                   Clear all
                 </button>
               )}
@@ -126,9 +105,7 @@ export default function SpacesBrowser({ spaces }: SpacesBrowserProps) {
 
         {filtered.length === 0 ? (
           <div className="col-span-full text-center py-16 text-gray-500">
-            <div className="font-semibold text-gray-900 mb-1.5">
-              No spaces found
-            </div>
+            <div className="font-semibold text-gray-900 mb-1.5">No spaces found</div>
             <div className="text-sm">Try a different search term or filters.</div>
           </div>
         ) : (
