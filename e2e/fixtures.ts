@@ -36,6 +36,67 @@ export const mockOwnerSession = async (page: Page) => {
     });
 };
 
+export const mockUserSession = async (page: Page) => {
+    await page.route("**/api/auth/session", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({
+                user: {
+                    id: "user-1",
+                    name: "Test User",
+                    email: "user@test.com",
+                    role: "user",
+                    token: "fake-user-jwt",
+                },
+                expires: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+            }),
+        });
+    });
+
+    await page.route("**/api/auth/csrf", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({ csrfToken: "test-csrf" }),
+        });
+    });
+
+    await page.route("**/api/auth/providers", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({}),
+        });
+    });
+};
+
+export const mockUnauthenticatedSession = async (page: Page) => {
+    await page.route("**/api/auth/session", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({}),
+        });
+    });
+
+    await page.route("**/api/auth/csrf", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({ csrfToken: "test-csrf" }),
+        });
+    });
+
+    await page.route("**/api/auth/providers", async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({}),
+        });
+    });
+};
+
 export interface ReportPreferenceFixture {
     enabled: boolean;
     frequency: "daily" | "weekly" | "monthly";
