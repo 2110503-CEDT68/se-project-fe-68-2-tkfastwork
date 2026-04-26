@@ -9,10 +9,27 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#384795",
-        "primary-dark": "#2d3a7a",
-        "primary-light": "#eef0fa",
-        "primary-light2": "#d4d9f0",
+        primary: "#3b82f6",
+        "primary-dark": "#1e40af",
+        "primary-light": "#e6f0ff",
+        "primary-light2": "#dbeafe",
+        accent: "#06b6d4",
+        surface: "#f8fafc",
+        muted: "#64748b",
+      },
+      fontFamily: {
+        sans: [
+          "Inter",
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica Neue",
+          "Arial",
+          "Noto Sans",
+          "sans-serif",
+        ],
       },
     },
   },
