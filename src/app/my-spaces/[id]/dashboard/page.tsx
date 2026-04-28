@@ -262,7 +262,7 @@ export default function DashboardPage() {
 
   const maxPeakCount = useMemo(() => {
     if (!stats?.peakHours.length) return 0;
-    return Math.max(...stats.peakHours.map((peak) => peak.count));
+    return Math.max(...stats.peakHours.map((peak) => peak.count), 1);
   }, [stats?.peakHours]);
 
   if (loading) return <LoadingSpinner />;
@@ -410,38 +410,21 @@ export default function DashboardPage() {
             <h2 className="text-lg font-bold text-gray-950">Customer Demographics</h2>
 
             <div className="mt-5 space-y-6">
-              <div>
-                <h3 className="text-sm font-semibold uppercase text-gray-500">Age group</h3>
-                {stats.demographicBreakdown.byAgeGroup.length === 0 ? (
-                  <div className="mt-3">
-                    <EmptyState>No age data available.</EmptyState>
-                  </div>
-                ) : (
-                  <div className="mt-3 flex h-32 items-end gap-2 border-b border-gray-200 pb-2">
-                    {stats.demographicBreakdown.byAgeGroup.map((item) => (
-                      <div key={item.ageGroup} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end">
-                        <span className="mb-1 text-[10px] font-semibold text-gray-600">
-                          {formatPercent(item.percentage)}
-                        </span>
-                        <div
-                          className="w-full rounded-t bg-blue-500 transition-all duration-500"
-                          style={{ height: `${Math.max(item.percentage, 4)}%` }}
-                        />
-                        <span className="mt-2 w-full truncate text-center text-[10px] text-gray-600">
-                          {item.ageGroup}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <BreakdownBars
+                title="Age group"
+                items={stats.demographicBreakdown.byAgeGroup}
+                getKey={(item) => item.ageGroup}
+                getLabel={(item) => item.ageGroup}
+                barColor="bg-blue-500"
+                emptyText="No age data available."
+              />
 
               <BreakdownBars
                 title="Gender"
                 items={stats.demographicBreakdown.byGender}
                 getKey={(item) => item.gender}
                 getLabel={(item) => item.gender}
-                barClassName="bg-emerald-500"
+                barColor="bg-emerald-500"
                 emptyText="No gender data available."
               />
 
@@ -450,7 +433,7 @@ export default function DashboardPage() {
                 items={stats.demographicBreakdown.byOccupation}
                 getKey={(item) => item.occupation}
                 getLabel={(item) => item.occupation}
-                barClassName="bg-amber-500"
+                barColor="bg-amber-500"
                 emptyText="No occupation data available."
               />
 
@@ -459,36 +442,58 @@ export default function DashboardPage() {
                 items={stats.demographicBreakdown.byRevenueRange}
                 getKey={(item) => item.range}
                 getLabel={(item) => item.range}
-                barClassName="bg-violet-500"
+                barColor="bg-violet-500"
                 emptyText="No revenue-range data available."
               />
             </div>
           </section>
 
           <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-950">Peak Hours</h2>
-            <p className="mt-1 text-sm text-gray-500">Top booking start times in the selected date range.</p>
+            <h2 className="text-lg font-bold text-gray-950">Popular Times</h2>
+            <p className="mt-1 text-sm text-gray-500">Booking activity by hour of day.</p>
 
-            {stats.peakHours.length === 0 ? (
+            {stats.peakHours.every((p) => p.count === 0) ? (
               <div className="mt-5">
-                <EmptyState>No peak-hour data available.</EmptyState>
+                <EmptyState>No booking data available.</EmptyState>
               </div>
             ) : (
-              <div className="mt-5 space-y-3">
-                {stats.peakHours.map((peak) => {
-                  const width = maxPeakCount ? Math.max((peak.count / maxPeakCount) * 100, 6) : 0;
-                  return (
-                    <div key={peak.hour}>
-                      <div className="mb-1 flex items-center justify-between text-sm">
-                        <span className="font-medium text-gray-800">{formatHourRange(peak.hour)}</span>
-                        <span className="text-gray-500">{peak.count} bookings</span>
+              <div className="mt-5">
+                <div className="flex h-36 items-end gap-[3px]">
+                  {stats.peakHours.map((peak) => {
+                    const heightPct = maxPeakCount ? (peak.count / maxPeakCount) * 100 : 0;
+                    const intensity = maxPeakCount ? peak.count / maxPeakCount : 0;
+                    return (
+                      <div
+                        key={peak.hour}
+                        className="group relative flex flex-1 flex-col items-center justify-end h-full"
+                      >
+                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                          {formatHourRange(peak.hour)}: {peak.count} bookings
+                        </div>
+                        <div
+                          className="w-full rounded-t transition-all duration-300"
+                          style={{
+                            height: `${Math.max(heightPct, peak.count > 0 ? 4 : 0)}%`,
+                            backgroundColor: peak.count === 0
+                              ? "#E2E8F0"
+                              : `rgba(37, 99, 235, ${0.3 + intensity * 0.7})`,
+                          }}
+                        />
                       </div>
-                      <div className="h-3 rounded-full bg-gray-100">
-                        <div className="h-3 rounded-full bg-blue-600" style={{ width: `${width}%` }} />
-                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-1.5 flex">
+                  {stats.peakHours.map((peak) => (
+                    <div key={peak.hour} className="flex-1 text-center">
+                      {peak.hour % 3 === 0 && (
+                        <span className="text-[10px] text-gray-400">
+                          {peak.hour === 0 ? "12a" : peak.hour < 12 ? `${peak.hour}a` : peak.hour === 12 ? "12p" : `${peak.hour - 12}p`}
+                        </span>
+                      )}
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
             )}
 
@@ -560,14 +565,14 @@ function BreakdownBars<T extends DemographicItem>({
   items,
   getKey,
   getLabel,
-  barClassName,
+  barColor,
   emptyText,
 }: {
   title: string;
   items: T[];
   getKey: (item: T) => string;
   getLabel: (item: T) => string;
-  barClassName: string;
+  barColor: string;
   emptyText: string;
 }) {
   return (
@@ -578,18 +583,18 @@ function BreakdownBars<T extends DemographicItem>({
           <EmptyState>{emptyText}</EmptyState>
         </div>
       ) : (
-        <div className="mt-3 space-y-3">
+        <div className="mt-3 space-y-2.5">
           {items.map((item) => (
             <div key={getKey(item)}>
               <div className="mb-1 flex items-center justify-between gap-4 text-sm">
                 <span className="truncate font-medium capitalize text-gray-800">{getLabel(item)}</span>
-                <span className="shrink-0 text-gray-500">
+                <span className="shrink-0 text-xs text-gray-500">
                   {formatPercent(item.percentage)} ({item.count})
                 </span>
               </div>
-              <div className="h-2.5 rounded-full bg-gray-100">
+              <div className="h-2 rounded-full bg-gray-100">
                 <div
-                  className={`h-2.5 rounded-full ${barClassName}`}
+                  className={`h-2 rounded-full ${barColor} transition-all duration-300`}
                   style={{ width: `${Math.max(item.percentage, 2)}%` }}
                 />
               </div>
