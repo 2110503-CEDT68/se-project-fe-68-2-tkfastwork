@@ -117,7 +117,7 @@ export default function RegisterPage() {
               className="text-[0.82rem] font-semibold text-gray-900"
               htmlFor="regName"
             >
-              Full Name
+              Full Name *
             </label>
             <input
               type="text"
@@ -136,7 +136,7 @@ export default function RegisterPage() {
               className="text-[0.82rem] font-semibold text-gray-900"
               htmlFor="regTel"
             >
-              Telephone
+              Telephone *
             </label>
             <input
               type="tel"
@@ -156,7 +156,7 @@ export default function RegisterPage() {
                 className="text-[0.82rem] font-semibold text-gray-900"
                 htmlFor="regDob"
               >
-                Date of Birth
+                Date of Birth *
               </label>
               <input
                 type="date"
@@ -173,7 +173,7 @@ export default function RegisterPage() {
                 className="text-[0.82rem] font-semibold text-gray-900"
                 htmlFor="regGender"
               >
-                Gender
+                Gender *
               </label>
               <select
                 id="regGender"
@@ -198,7 +198,7 @@ export default function RegisterPage() {
                 className="text-[0.82rem] font-semibold text-gray-900"
                 htmlFor="regOccupation"
               >
-                Occupation
+                Occupation *
               </label>
               <input
                 type="text"
@@ -216,7 +216,7 @@ export default function RegisterPage() {
                 className="text-[0.82rem] font-semibold text-gray-900"
                 htmlFor="regRevenue"
               >
-                Revenue
+                Revenue *
               </label>
               <input
                 type="number"
@@ -236,7 +236,7 @@ export default function RegisterPage() {
               className="text-[0.82rem] font-semibold text-gray-900"
               htmlFor="regEmail"
             >
-              Email
+              Email *
             </label>
             <input
               type="email"
@@ -255,7 +255,7 @@ export default function RegisterPage() {
               className="text-[0.82rem] font-semibold text-gray-900"
               htmlFor="regPassword"
             >
-              Password
+              Password *
             </label>
             <input
               type="password"
@@ -274,7 +274,7 @@ export default function RegisterPage() {
               className="text-[0.82rem] font-semibold text-gray-900"
               htmlFor="regConfirmPassword"
             >
-              Confirm Password
+              Confirm Password *
             </label>
             <input
               type="password"

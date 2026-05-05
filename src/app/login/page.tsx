@@ -76,7 +76,7 @@ function LoginForm() {
               className="text-[0.82rem] font-semibold text-gray-900"
               htmlFor="loginEmail"
             >
-              Email
+              Email *
             </label>
             <input
               type="email"
@@ -95,7 +95,7 @@ function LoginForm() {
               className="text-[0.82rem] font-semibold text-gray-900"
               htmlFor="loginPassword"
             >
-              Password
+              Password *
             </label>
             <input
               type="password"

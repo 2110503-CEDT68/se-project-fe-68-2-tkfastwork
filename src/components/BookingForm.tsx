@@ -242,7 +242,7 @@ export default function BookingForm({ spaceId, spaceName, opentime, closetime }:
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <span className="text-[0.82rem] font-semibold text-gray-900">Room</span>
+          <span className="text-[0.82rem] font-semibold text-gray-900">Room *</span>
           {roomsLoading ? (
             <p className="text-sm text-gray-400">Loading rooms...</p>
           ) : rooms.length === 0 ? (
@@ -302,7 +302,7 @@ export default function BookingForm({ spaceId, spaceName, opentime, closetime }:
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-[0.82rem] font-semibold text-gray-900" htmlFor="apptDate">Date</label>
+          <label className="text-[0.82rem] font-semibold text-gray-900" htmlFor="apptDate">Date *</label>
           <input type="date" id="apptDate" value={selectedDate} min={todayValue} onChange={handleDateChange} className={inputCls} required disabled={!selectedRoomId} />
         </div>
 

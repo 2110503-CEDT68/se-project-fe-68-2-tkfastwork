@@ -278,7 +278,7 @@ export default function EditBookingModal({
               className="text-[0.82rem] font-semibold text-gray-900"
               htmlFor="editApptStartSlot"
             >
-              Start Time
+              Start Time *
             </label>
             <select
               id="editApptStartSlot"
@@ -302,7 +302,7 @@ export default function EditBookingModal({
               className="text-[0.82rem] font-semibold text-gray-900"
               htmlFor="editApptEndSlot"
             >
-              End Time
+              End Time *
             </label>
             <select
               id="editApptEndSlot"
