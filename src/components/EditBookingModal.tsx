@@ -260,7 +260,7 @@ export default function EditBookingModal({
               className="text-[0.82rem] font-semibold text-gray-900"
               htmlFor="editApptDate"
             >
-              New Date
+              New Date *
             </label>
             <input
               type="date"
