@@ -115,7 +115,7 @@ export default function BecomeOwnerPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-gray-700">Space Name</label>
+              <label className="text-sm font-semibold text-gray-700">Space Name *</label>
               <input
                 type="text"
                 value={name}
@@ -126,7 +126,7 @@ export default function BecomeOwnerPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-gray-700">Telephone</label>
+              <label className="text-sm font-semibold text-gray-700">Telephone *</label>
               <input
                 type="tel"
                 value={tel}
@@ -139,7 +139,7 @@ export default function BecomeOwnerPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-gray-700">Address</label>
+            <label className="text-sm font-semibold text-gray-700">Address *</label>
             <input
               type="text"
               value={address}
@@ -152,7 +152,7 @@ export default function BecomeOwnerPage() {
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-gray-700">Opening Time</label>
+              <label className="text-sm font-semibold text-gray-700">Opening Time *</label>
               <input
                 type="time"
                 value={opentime}
@@ -162,7 +162,7 @@ export default function BecomeOwnerPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-gray-700">Closing Time</label>
+              <label className="text-sm font-semibold text-gray-700">Closing Time *</label>
               <input
                 type="time"
                 value={closetime}
@@ -174,7 +174,7 @@ export default function BecomeOwnerPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-gray-700">Description</label>
+            <label className="text-sm font-semibold text-gray-700">Description *</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -188,7 +188,7 @@ export default function BecomeOwnerPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-gray-700">Proof of Ownership URL</label>
+            <label className="text-sm font-semibold text-gray-700">Proof of Ownership URL *</label>
             <input
               type="url"
               value={proofOfOwnership}

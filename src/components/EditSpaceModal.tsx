@@ -139,7 +139,7 @@ export default function EditSpaceModal({ space, isOpen, onClose, onUpdated }: Ed
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
+                Name *
               </label>
               <input
                 type="text"
@@ -153,7 +153,7 @@ export default function EditSpaceModal({ space, isOpen, onClose, onUpdated }: Ed
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address
+                Address *
               </label>
               <input
                 type="text"
@@ -167,7 +167,7 @@ export default function EditSpaceModal({ space, isOpen, onClose, onUpdated }: Ed
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Telephone
+                Telephone *
               </label>
               <input
                 type="tel"
@@ -182,7 +182,7 @@ export default function EditSpaceModal({ space, isOpen, onClose, onUpdated }: Ed
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Opening Time
+                  Opening Time *
                 </label>
                 <input
                   type="time"
@@ -195,7 +195,7 @@ export default function EditSpaceModal({ space, isOpen, onClose, onUpdated }: Ed
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Closing Time
+                  Closing Time *
                 </label>
                 <input
                   type="time"
@@ -210,7 +210,7 @@ export default function EditSpaceModal({ space, isOpen, onClose, onUpdated }: Ed
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
+                Description *
               </label>
               <textarea
                 name="description"
